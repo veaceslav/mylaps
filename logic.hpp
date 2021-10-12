@@ -2,18 +2,24 @@
 #include <iostream>
 #include <optional>
 #include <sstream>
+#include <vector>
 
 struct laps_data {
     std::uint8_t m_cart_nr;
     std::uint64_t m_seconds;
 };
 
+std::int64_t MAX_INT = 0x7FFFFFFFFFFFFFFF;
 
 struct racing_data {
-    std::uint8_t m_cart;
-    std::uint64_t m_lap_nr;
-    std::uint64_t m_best_lap;
+    std::uint8_t m_cart{0};
+    std::int64_t m_lap_nr{0};
+    std::int64_t m_prev_passing{-1};
+    std::int64_t m_best_lap_time{MAX_INT};
+    std::int64_t m_best_lap{-1};
 };
+
+
 
 std::optional<laps_data> parse_line(std::string const& line){
 
@@ -29,5 +35,40 @@ std::optional<laps_data> parse_line(std::string const& line){
         return std::nullopt;
     }
 
-    return laps_data { static_cast<std::uint8_t>(kart_nr), hour*3600+minutes*60+seconds };
+    return laps_data { static_cast<std::uint8_t>(kart_nr), (hour*3600)+(minutes*60)+seconds };
+}
+
+
+void calculate_winner(std::vector<racing_data>& racing_data,
+                      struct racing_data& final_result,
+                      laps_data const& lap_time){
+
+    auto& current_kart = racing_data[lap_time.m_cart_nr-1];
+    if(current_kart.m_prev_passing == -1){
+        current_kart.m_prev_passing = lap_time.m_seconds;
+        current_kart.m_cart = lap_time.m_cart_nr;
+        return;
+    }
+
+    current_kart.m_lap_nr++;
+    std:int64_t best_lap = lap_time.m_seconds - current_kart.m_prev_passing;
+    if(best_lap < current_kart.m_best_lap_time){
+        current_kart.m_best_lap_time = best_lap;
+        current_kart.m_best_lap = current_kart.m_lap_nr;
+    }
+    current_kart.m_prev_passing = lap_time.m_seconds;
+
+    // everytime a kart will do a new lap, check and store the best lap
+    if(final_result.m_lap_nr < current_kart.m_lap_nr){
+        for(auto& data :  racing_data){
+            if(data.m_best_lap_time < final_result.m_best_lap_time){
+
+                final_result.m_best_lap_time = data.m_best_lap_time;
+                final_result.m_cart = data.m_cart;
+                final_result.m_best_lap = data.m_best_lap;
+            }
+        }
+        final_result.m_lap_nr++;
+    }
+
 }

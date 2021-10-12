@@ -10,3 +10,4 @@ project(mylaps)
 
 # add the executable
 add_executable(mylaps main.cpp logic.hpp)
+add_executable(unit_test test.cpp logic.hpp)

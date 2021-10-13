@@ -4,6 +4,10 @@
 #include <sstream>
 #include <vector>
 
+
+/**
+ * @brief The laps_data struct defines the input data
+ */
 struct laps_data {
     std::uint8_t m_cart_nr;
     std::uint64_t m_seconds;
@@ -11,6 +15,10 @@ struct laps_data {
 
 std::int64_t MAX_INT = 0x7FFFFFFFFFFFFFFF;
 
+/**
+ * @brief The racing_data struct contains information about
+ * all karts best times, and it's used to compute the final result
+ */
 struct racing_data {
     std::uint8_t m_cart{0};
     std::int64_t m_lap_nr{0};
@@ -51,7 +59,7 @@ void calculate_winner(std::vector<racing_data>& racing_data,
     }
 
     current_kart.m_lap_nr++;
-    std:int64_t best_lap = lap_time.m_seconds - current_kart.m_prev_passing;
+    std::int64_t best_lap = lap_time.m_seconds - current_kart.m_prev_passing;
     if(best_lap < current_kart.m_best_lap_time){
         current_kart.m_best_lap_time = best_lap;
         current_kart.m_best_lap = current_kart.m_lap_nr;
